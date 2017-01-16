@@ -91,7 +91,25 @@ def initBoard(boardString):
     testMovesLeft()
     return True
 
-    
+def nextMove(boardArray):
+    for i in range(n):
+        for j in range(n):
+            if boardArray[i][j] == ' ':
+                boardArray[i][j] = 'o'
+                print "found a blank spot"
+                return convertBoardToString(boardArray)
+    return convertBoardToString(boardArray)
+
+def convertBoardToString(boardArray):
+    retString = ''
+    print boardArray
+    print "retString: [" + retString + "]"
+    for i in range(3):
+        print "retString: [" + retString + "]"
+        print boardArray[i][0:3]
+        retString += ''.join(boardArray[i][0:3])
+    return retString
+        
 # Create your views here.
 def index(request):
     boardString = request.GET.get('board')
@@ -99,7 +117,8 @@ def index(request):
     if False == initBoard(boardString):
         return HttpResponseBadRequest()
 
-    return HttpResponse(boardString)
+    newBoardString = nextMove(board)
+    return HttpResponse(newBoardString)
 
 def db(request):
     greeting = Greeting()
