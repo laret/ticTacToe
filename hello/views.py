@@ -40,6 +40,27 @@ def createBoard(boardString):
         for j in range(n):
             board[i][j] = boardString[i*n+j]
 
+def winningBoard(boardArray):
+    # check to see if someone won vertically
+    for j in range(n):
+        if boardArray[0][j] == boardArray[1][j] and boardArray[1][j] == boardArray[2][j]:
+            print boardArray[0][j] + " won in a column"
+            return boardArray[0][j]
+
+    # check to see if someone one horizontally
+    for i in range(n):
+        if boardArray[i][0] == boardArray[i][1] and boardArray[i][1] == boardArray[i][2]:
+            print boardArray[i][0] + " won in a row"
+            return boardArray[i][0]
+
+    # check to see if someone won on a diagonal
+    if boardArray[0][0] == boardArray[1][1] and boardArray[1][1] == boardArray[2][2]:
+        print boardArray[0][0] + " won on a diagonal"
+        return boardArray[0][0]
+    if boardArray[0][2] == boardArray[1][1] and boardArray[1][1] == boardArray[2][0]:
+        print boardArray[0][2] + " won on a diagonal"
+        return boardArray[0][2]
+    return ''
 
 # Create your views here.
 def index(request):
@@ -48,12 +69,14 @@ def index(request):
     if isBoardStringValid(boardString) == False:
         return HttpResponseBadRequest()
 
-    testIsBoardStringValid()
-
     createBoard(boardString)
-    print board
-    print boardString
     printBoard(board)    
+    if winningBoard(board) != '':
+        return HttpResponseBadRequest()
+
+    testIsBoardStringValid()
+    testWinningBoard()
+
     return HttpResponse(boardString)
 
     #times = int(os.environ.get('TIMES',3))
@@ -105,6 +128,40 @@ def testIsBoardStringValid():
     boardString = " xxx  ox "
     validBoard = isBoardStringValid(boardString)
     test(testPrefix + " has too many x's.. can't possibly be o's turn", validBoard == False)
+
+def testWinningBoard():
+    #x won horizontally
+    boardArray = [['x', 'x', 'x'], [' ',' ','o'], ['o',' ','o']] 
+    winner = winningBoard(boardArray)
+    test ("x won on a horizontal row", winner == 'x')
+    #o won horizontally
+    boardArray = [['o', 'o', 'o'], [' ',' ','x'], ['x',' ','x']] 
+    winner = winningBoard(boardArray)
+    test ("o won on a horizontal row", winner == 'o')
+    #x won vertically
+    boardArray = [['x', 'o', 'o'], ['x',' ','o'], ['x',' ','o']] 
+    winner = winningBoard(boardArray)
+    test ("x won on a vertical row", winner == 'x')
+    #o won vertically
+    boardArray = [['o', ' ', 'o'], ['o',' ','x'], ['o',' ','x']] 
+    winner = winningBoard(boardArray)
+    test ("o won on a vertical row", winner == 'o')
+    #x won on a diagonal 
+    boardArray = [['x', 'o', 'o'], [' ','x','o'], [' ',' ','x']] 
+    winner = winningBoard(boardArray)
+    test ("x won on a diagonal", winner == 'x')
+    #o won on a diagonal 
+    boardArray = [['o', ' ', 'x'], [' ','o','x'], ['x',' ','o']] 
+    winner = winningBoard(boardArray)
+    test ("o won on a diagonal", winner == 'o')
+    #x won on a diagonal 
+    boardArray = [[' ', 'o', 'x'], [' ','x','o'], ['x',' ','o']] 
+    winner = winningBoard(boardArray)
+    test ("x won on a diagonal", winner == 'x')
+    #o won on a diagonal 
+    boardArray = [['x', ' ', 'o'], [' ','o','x'], ['o',' ','x']] 
+    winner = winningBoard(boardArray)
+    test ("o won on a diagonal", winner == 'o')
 
 def test(testName, testPassed):
     if testPassed:
