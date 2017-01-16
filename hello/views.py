@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse,HttpResponseBadRequest
 from .models import Greeting
 from termcolor import colored
+from copy import deepcopy
 import requests
 import os
 
@@ -91,6 +92,14 @@ def initBoard(boardString):
     testMovesLeft()
     return True
 
+def scoreBoard(boardArray):
+    currentWinner = winningBoard(boardArray)
+    if currentWinner == '':
+        return 0
+    if currentWinner == ourPlayer:
+        return 10
+    return -10
+
 def nextMove(boardArray):
     for i in range(n):
         for j in range(n):
@@ -99,6 +108,61 @@ def nextMove(boardArray):
                 print "found a blank spot"
                 return convertBoardToString(boardArray)
     return convertBoardToString(boardArray)
+
+def deepCopyBoard(boardArray):
+    copyboard = [[' ']*n for x in xrange(n)]
+    for i in range(n):
+        for j in range(n):
+            copyBoard[i][j] = boardArray[i][j]
+    return copyBoard
+
+def nextBestMove(boardArray):
+    bestScore = -100
+    bestRow = -1
+    bestCol = -1
+    for i in range(n):
+        for j in range(n):
+            if boardArray[i][j] == ' ':
+                boardArray[i][j] = 'o'
+                score = miniMax(boardArray, 0, False)
+                boardArray[i][j] = ' '
+                if score > bestScore:
+                    bestScore = score
+                    bestRow = i
+                    bestCol = j
+    if bestRow != -1 and bestCol != -1:
+        boardArray[bestRow][bestCol] = 'o'
+    return convertBoardToString(boardArray)
+
+def miniMax(boardArray, depth, shouldMaximize):
+    score = scoreBoard(boardArray)
+    if score != 0:
+        return score
+
+    if False == movesLeft(boardArray):
+        return score
+
+    if shouldMaximize:
+        best = -100
+        for i in range(n):
+            for j in range(n):
+                if boardArray[i][j] == ' ':
+                    boardArray[i][j] = 'o'
+                    best = max(best, miniMax(boardArray, depth+1, False))
+                    boardArray[i][j] = ' '
+        return best
+    #should minimize
+    best = 100
+    for i in range(n):
+        for j in range(n):
+            if boardArray[i][j] == ' ':
+                boardArray[i][j] = 'x'
+                best = min(best, miniMax(boardArray, depth+1, True))
+                boardArray[i][j] = ' '
+    return best
+    
+                    
+        
 
 def convertBoardToString(boardArray):
     retString = ''
@@ -117,7 +181,7 @@ def index(request):
     if False == initBoard(boardString):
         return HttpResponseBadRequest()
 
-    newBoardString = nextMove(board)
+    newBoardString = nextBestMove(board)
     return HttpResponse(newBoardString)
 
 def db(request):
