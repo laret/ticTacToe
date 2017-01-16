@@ -62,25 +62,45 @@ def winningBoard(boardArray):
         return boardArray[0][2]
     return ''
 
+def movesLeft(boardArray):
+    for i in range(n):
+        for j in range(n):
+            if boardArray[i][j] == ' ':
+                return True
+    return False
+
+def initBoard(boardString):
+    # make sure the string passed in is valid
+    if False == isBoardStringValid(boardString):
+        return False;
+
+    createBoard(boardString)
+    printBoard(board)
+
+    # check to see if someone already won
+    if winningBoard(board) != '':
+        return False
+    
+    # check to see if there are any moves left
+    if False == movesLeft(board):
+        return HttpResponseBadRequest()
+
+    # Run our unit tests
+    testIsBoardStringValid()
+    testWinningBoard()
+    testMovesLeft()
+    return True
+
+    
 # Create your views here.
 def index(request):
     boardString = request.GET.get('board')
     print "boardString is [" + boardString + "]"
-    if isBoardStringValid(boardString) == False:
+    if False == initBoard(boardString):
         return HttpResponseBadRequest()
-
-    createBoard(boardString)
-    printBoard(board)    
-    if winningBoard(board) != '':
-        return HttpResponseBadRequest()
-
-    testIsBoardStringValid()
-    testWinningBoard()
 
     return HttpResponse(boardString)
 
-    #times = int(os.environ.get('TIMES',3))
-    #return HttpResponse(board * times)
 def db(request):
     greeting = Greeting()
     greeting.save()
@@ -162,6 +182,13 @@ def testWinningBoard():
     boardArray = [['x', ' ', 'o'], [' ','o','x'], ['o',' ','x']] 
     winner = winningBoard(boardArray)
     test ("o won on a diagonal", winner == 'o')
+
+def testMovesLeft():
+    boardArray = [['x', 'x', 'o'], ['x','o','x'], ['o','o','x']] 
+    test ("There are no moves left", movesLeft(boardArray) == False)
+    boardArray = [['x', ' ', 'o'], ['x','o','x'], ['o','o','x']] 
+    test ("There are moves left", movesLeft(boardArray))
+    
 
 def test(testName, testPassed):
     if testPassed:
